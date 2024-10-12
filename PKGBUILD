@@ -9,7 +9,8 @@ _offline=false
 _proj="hip"
 _pkg="grub"
 pkgname="arch-${_pkg}"
-pkgver=0.1.1.1
+pkgver=0.1.1.1.1.1.1
+_commit="3356937a2dccfedca34e9e48a62586a4e2c995ea"
 pkgrel=1
 _pkgdesc=(
   'Produces a standalone GRUB binary'
@@ -48,13 +49,40 @@ checkdepends=(
 )
 optdepends=(
   'luks-tools: Format LUKS volume in a GRUB compatible format'  
+  'shfmt: to produce indented GRUB configuration files'
 )
-sha256sums=()
 source=()
-_url="${url}.git"
-_branch="master"
-[[ "${_offline}" == true ]] && \
-  _url="${_local}"
+sha256sums=()
+_url="${url}"
+_tag="${_commit}"
+_tag_name="commit"
+_tarname="${pkgname}-${_tag}"
+[[ "${_offline}" == "true" ]] && \
+  _url="file://${HOME}/${pkgname}"
+[[ "${_git}" == true ]] && \
+  makedepends+=(
+    "git"
+  ) && \
+  source+=(
+    "${_tarname}::git+${_url}#${_tag_name}=${_tag}?signed"
+  ) && \
+  sha256sums+=(
+    SKIP
+  )
+[[ "${_git}" == false ]] && \
+  if [[ "${_tag_name}" == 'pkgver' ]]; then
+    _tar="${_tarname}.tar.gz::${_url}/archive/refs/tags/${_tag}.tar.gz"
+    _sum="d4f4179c6e4ce1702c5fe6af132669e8ec4d0378428f69518f2926b969663a91"
+  elif [[ "${_tag_name}" == "commit" ]]; then
+    _tar="${_tarname}.zip::${_url}/archive/${_commit}.zip"
+    _sum="41d0f776de3814d390fd6f8fd75fd1c217c7ff4b3c79953a855356c8652bd554"
+  fi && \
+    source+=(
+      "${_tar}"
+    ) && \
+    sha256sums+=(
+      "${_sum}"
+    )
 [[ "${_git}" == true ]] && \
   makedepends+=(
     'git'
@@ -65,14 +93,6 @@ _branch="master"
   sha256sums+=(
     'SKIP'
   )
-[[ "${_git}" == false ]] && \
-  source+=(
-    "${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
-  ) && \
-  sha256sums+=(
-    "e912d98095ff94d2c3098838782b73613512a9e9e7d8d0165343979be62310e7"
-  )
-
 check() {
   make \
     -k check \
@@ -84,9 +104,10 @@ check() {
 package() {
   make \
     DESTDIR="${pkgdir}" \
+    PREFIX="/usr" \
     install \
       -C \
-        "${pkgname}-${pkgver}"
+        "${pkgname}-${_tag}"
 }
 
 # vim:set sw=2 sts=-1 et:
