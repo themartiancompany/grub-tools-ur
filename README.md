@@ -1,4 +1,4 @@
-# `arch-grub`
+# `grub-tools`
 
 universal recipe for [user repo](../themartiancompany/ur).
 

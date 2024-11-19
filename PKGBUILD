@@ -8,13 +8,13 @@ _git=false
 _offline=false
 _proj="hip"
 _pkg="grub"
-pkgname="arch-${_pkg}"
-pkgver=0.1.1.1.1.1.1
-_commit="3356937a2dccfedca34e9e48a62586a4e2c995ea"
+pkgname="${_pkg}-tools"
+pkgver=0.1.1.1.1.1.1.1
+_commit='f1c97242edfc2a6b74543f75de4a592904f80342'
 pkgrel=1
 _pkgdesc=(
-  'Produces a standalone GRUB binary'
-  'compatible with Arch Linux.'
+  'Produces a standalone GRUB binary.'
+  'compatible with Life systems.'
 )
 pkgdesc="${_pkgdesc[*]}"
 arch=(
@@ -32,11 +32,14 @@ _http="${_gh}"
 url="${_http}/${_ns}/${pkgname}"
 _local="file://${HOME}/${pkgname}"
 depends=(
+  'bash'
   "${_pkg}"
-  bash
+  'libcrash-bash'
 )
 provides=(
+  "arch-${_pkg}=${pkgver}"
   "mk${_pkg}=${pkgver}"
+  "mk${_pkg}cfg=${pkgver}"
 )
 makedepends=(
   "make"
@@ -51,48 +54,36 @@ optdepends=(
   'luks-tools: Format LUKS volume in a GRUB compatible format'  
   'shfmt: to produce indented GRUB configuration files'
 )
-source=()
-sha256sums=()
 _url="${url}"
 _tag="${_commit}"
 _tag_name="commit"
 _tarname="${pkgname}-${_tag}"
 [[ "${_offline}" == "true" ]] && \
   _url="file://${HOME}/${pkgname}"
-[[ "${_git}" == true ]] && \
+if [[ "${_git}" == true ]]; then
   makedepends+=(
     "git"
-  ) && \
-  source+=(
-    "${_tarname}::git+${_url}#${_tag_name}=${_tag}?signed"
-  ) && \
-  sha256sums+=(
-    SKIP
   )
-[[ "${_git}" == false ]] && \
+  _src="${_tarname}::git+${_url}#${_tag_name}=${_tag}?signed"
+  _sum="SKIP"
+fi
+if [[ "${_git}" == false ]]; then
   if [[ "${_tag_name}" == 'pkgver' ]]; then
-    _tar="${_tarname}.tar.gz::${_url}/archive/refs/tags/${_tag}.tar.gz"
+    _src="${_tarname}.tar.gz::${_url}/archive/refs/tags/${_tag}.tar.gz"
     _sum="d4f4179c6e4ce1702c5fe6af132669e8ec4d0378428f69518f2926b969663a91"
   elif [[ "${_tag_name}" == "commit" ]]; then
-    _tar="${_tarname}.zip::${_url}/archive/${_commit}.zip"
-    _sum="41d0f776de3814d390fd6f8fd75fd1c217c7ff4b3c79953a855356c8652bd554"
-  fi && \
-    source+=(
-      "${_tar}"
-    ) && \
-    sha256sums+=(
-      "${_sum}"
-    )
-[[ "${_git}" == true ]] && \
-  makedepends+=(
-    'git'
-  ) && \
-  source+=(
-    "${pkgname}::git+${_url}"
-  ) && \
-  sha256sums+=(
-    'SKIP'
-  )
+    _src="${_tarname}.zip::${_url}/archive/${_commit}.zip"
+    _sum='079dd907a123fe29d3249e21d648f4fe29b9f719d8b3b59642cf493dd81b1bf7'
+  fi
+fi
+source=(
+  "${_src}"
+)
+sha256sums=(
+  "${_sum}"
+)
+
+
 check() {
   make \
     -k check \
